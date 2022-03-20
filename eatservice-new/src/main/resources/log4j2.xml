@@ -1,0 +1,38 @@
+<Configuration monitorInterval="300" status="WARN">
+    <properties>
+        <property name="LOG_HOME">/tmp/xbatch_log</property>
+        <property name="FILE_NAME">batchlog</property>
+    </properties>
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} -- %msg%n"/>
+        </Console>
+
+        <RollingFile
+                name="MyFile"
+                fileName="/var/lib/tomcat9/eatservice/eatservice.log"
+                filePattern="/var/lib/tomcat9/eatservice/eatservice.%d{dd-MMM}.log.gz"
+                ignoreExceptions="false">
+            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} -- %msg%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1"/>
+            </Policies>
+            <DefaultRolloverStrategy max="5" />
+        </RollingFile>
+        <GELF name="gelfAppender" server="192.168.145.128" port="12201" hostName="eatservice" protocol="UDP">
+            <KeyValuePair key="environment" value="DEV"/>
+            <KeyValuePair key="application" value="localhost"/>
+            <KeyValuePair key="additionalFields" value="{'environment': 'TEST', 'application': 'MyAPP'}"/>
+        </GELF>
+    </Appenders>
+    <Loggers>
+        <Logger additivity="false" level="error" name="com.daimler.xbatch.gssn.step">
+            <AppenderRef ref="gelfAppender"/>
+        </Logger>
+        <Root level="info">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="gelfAppender"/>
+            <AppenderRef ref="MyFile"/>
+        </Root>
+    </Loggers>
+</Configuration>
